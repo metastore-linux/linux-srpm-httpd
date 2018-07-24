@@ -11,7 +11,7 @@
 %endif
 
 Name:               httpd
-Version:            2.4.33
+Version:            2.4.34
 Release:            1%{?dist}
 Summary:            Apache HTTP Server
 Group:              System Environment/Daemons
@@ -777,6 +777,9 @@ exit $rv
 %{_rpmconfigdir}/macros.d/macros.httpd
 
 %changelog
+* Tue Jul 34 2018 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.34-1
+- Update to upstream release 2.4.34
+
 * Sun May 20 2018 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.33-1
 - Update to upstream release 2.4.33
 
