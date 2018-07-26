@@ -12,7 +12,7 @@
 
 Name:               httpd
 Version:            2.4.34
-Release:            1%{?dist}
+Release:            4%{?dist}
 Summary:            Apache HTTP Server
 Group:              System Environment/Daemons
 License:            ASL 2.0
@@ -27,6 +27,7 @@ Source5:            httpd.tmpfiles
 Source6:            httpd.service
 Source7:            action-graceful.sh
 Source8:            action-configtest.sh
+Source9:            server-status.conf
 Source10:           httpd.conf
 Source11:           00-base.conf
 Source12:           00-mpm.conf
@@ -65,7 +66,6 @@ Source910:          index.theme.css
 Patch1:             httpd-2.4.1-apctl.patch
 Patch2:             httpd-2.4.9-apxs.patch
 Patch3:             httpd-2.4.1-deplibs.patch
-Patch5:             httpd-2.4.3-layout.patch
 Patch6:             httpd-2.4.3-apctl-systemd.patch
 # Needed for socket activation and mod_systemd patch
 Patch19:            httpd-2.4.25-detect-systemd.patch
@@ -76,37 +76,39 @@ Patch24:            httpd-2.4.1-corelimit.patch
 Patch25:            httpd-2.4.25-selinux.patch
 Patch26:            httpd-2.4.4-r1337344+.patch
 Patch27:            httpd-2.4.2-icons.patch
-Patch29:            httpd-2.4.27-systemd.patch
+Patch29:            httpd-2.4.33-systemd.patch
 Patch30:            httpd-2.4.4-cachehardmax.patch
 Patch31:            httpd-2.4.33-sslmultiproxy.patch
 Patch34:            httpd-2.4.17-socket-activation.patch
 Patch35:            httpd-2.4.33-sslciphdefault.patch
+Patch36:            httpd-2.4.33-r1830819+.patch
 
 # Bug fixes
 # https://bugzilla.redhat.com/show_bug.cgi?id=1397243
-Patch58:            httpd-2.4.33-r1738878.patch
-# https://bugzilla.redhat.com/show_bug.cgi?id=1564537
-Patch59:            httpd-2.4.33-sslmerging.patch
+Patch58:            httpd-2.4.34-r1738878.patch
+Patch59:            httpd-2.4.34-r1555631.patch
 
 # Security fixes
 
-BuildRequires:      autoconf, perl-interpreter, perl-generators, pkgconfig, findutils, xmlto
+BuildRequires:      gcc, autoconf, pkgconfig, findutils, xmlto
+BuildRequires:      perl-interpreter, perl-generators, systemd-devel
 BuildRequires:      zlib-devel, libselinux-devel, lua-devel, brotli-devel
 BuildRequires:      apr-devel >= 1.5.0, apr-util-devel >= 1.5.0, pcre-devel >= 5.0
-BuildRequires:      systemd-devel
-Requires:           /etc/mime.types, system-logos
+Requires:           /etc/mime.types, system-logos-httpd
 Requires:           httpd-tools = %{version}-%{release}
 Requires:           httpd-filesystem = %{version}-%{release}
 Requires:           mod_http2
 Requires(pre):      httpd-filesystem
-Requires(post):     systemd-units
 Requires(preun):    systemd-units
 Requires(postun):   systemd-units
+Requires(post):     systemd-units
 Obsoletes:          httpd-suexec
 Provides:           webserver
 Provides:           mod_dav = %{version}-%{release}, httpd-suexec = %{version}-%{release}
 Provides:           httpd-mmn = %{mmn}, httpd-mmn = %{mmnisa}
 Conflicts:          apr < 1.5.0-1
+Provides:           mod_proxy_uwsgi = %{version}-%{release}
+Obsoletes:          mod_proxy_uwsgi < 2.0.17.1-2
 
 %description
 The Apache HTTP Server is a powerful, efficient, and extensible
@@ -184,7 +186,7 @@ Epoch:              1
 BuildRequires:      openssl-devel
 Requires(pre):      httpd-filesystem
 Requires:           httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
-# Requires:         sscg >= 2.2.0
+Requires:           sscg >= 2.2.0
 # Require an OpenSSL which supports PROFILE=SYSTEM
 Conflicts:          openssl-libs < 1:1.0.1h-4
 
@@ -197,18 +199,18 @@ Security (TLS) protocols.
 # Package: mod_md
 # -------------------------------------------------------------------------------------------------------------------- #
 
-# %package -n mod_md
-# Summary:            Certificate provisioning using ACME for the Apache HTTP Server
-# Group:              System Environment/Daemons
-# BuildRequires:      jansson-devel, libcurl-devel
-# Requires:           httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
+%package -n mod_md
+Summary:            Certificate provisioning using ACME for the Apache HTTP Server
+Group:              System Environment/Daemons
+BuildRequires:      jansson-devel, libcurl-devel
+Requires:           httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
 
-# %description -n mod_md
-# This module manages common properties of domains for one or more
-# virtual hosts. Specifically it can use the ACME protocol (RFC Draft)
-# to automate certificate provisioning. These will be configured for
-# managed domains and their virtual hosts automatically. This includes
-# renewal of certificates before they expire.
+%description -n mod_md
+This module manages common properties of domains for one or more
+virtual hosts. Specifically it can use the ACME protocol (RFC Draft)
+to automate certificate provisioning. These will be configured for
+managed domains and their virtual hosts automatically. This includes
+renewal of certificates before they expire.
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # Package: mod_proxy_html
@@ -262,7 +264,6 @@ interface for storing and accessing per-user session data.
 %patch1 -p1 -b .apctl
 %patch2 -p1 -b .apxs
 %patch3 -p1 -b .deplibs
-%patch5 -p1 -b .layout
 %patch6 -p1 -b .apctlsystemd
 
 %patch19 -p1 -b .detectsystemd
@@ -271,15 +272,17 @@ interface for storing and accessing per-user session data.
 %patch23 -p1 -b .export
 %patch24 -p1 -b .corelimit
 %patch25 -p1 -b .selinux
-%patch26 -p1 -b .r1337344+
+#patch26 -p1 -b .r1337344+
 %patch27 -p1 -b .icons
 %patch29 -p1 -b .systemd
 %patch30 -p1 -b .cachehardmax
-%patch31 -p1 -b .sslmultiproxy
+#patch31 -p1 -b .sslmultiproxy
 %patch34 -p1 -b .socketactivation
 %patch35 -p1 -b .sslciphdefault
+%patch36 -p1 -b .r1830819+
+
 %patch58 -p1 -b .r1738878
-%patch59 -p1 -b .sslmerging
+%patch59 -p1 -b .r1555631
 
 # Patch in the vendor string
 sed -i '/^#define PLATFORM/s/Unix/%{vstring}/' os/unix/os.h
@@ -296,13 +299,14 @@ sed < $RPM_SOURCE_DIR/httpd.conf >> instance.conf '
 /^ *ErrorLog .logs/s,logs/,logs/${HTTPD_INSTANCE}_,
 '
 touch -r $RPM_SOURCE_DIR/instance.conf instance.conf
+cp -p $RPM_SOURCE_DIR/server-status.conf server-status.conf
 
 # Safety check: prevent build if defined MMN does not equal upstream MMN.
 vmmn=`echo MODULE_MAGIC_NUMBER_MAJOR | cpp -include include/ap_mmn.h | sed -n '/^2/p'`
 if test "x${vmmn}" != "x%{mmn}"; then
-   : Error: Upstream MMN is now ${vmmn}, packaged MMN is %{mmn}
-   : Update the mmn macro and rebuild.
-   exit 1
+    : Error: Upstream MMN is now ${vmmn}, packaged MMN is %{mmn}
+    : Update the mmn macro and rebuild.
+    exit 1
 fi
 
 sed 's/@MPM@/%{mpm}/' < $RPM_SOURCE_DIR/httpd.service.xml \
@@ -332,34 +336,34 @@ export LYNX_PATH=/usr/bin/links
 
 # Build the daemon
 ./configure \
-  --prefix=%{_sysconfdir}/httpd \
-  --exec-prefix=%{_prefix} \
-  --bindir=%{_bindir} \
-  --sbindir=%{_sbindir} \
-  --mandir=%{_mandir} \
-  --libdir=%{_libdir} \
-  --sysconfdir=%{_sysconfdir}/httpd/conf \
-  --includedir=%{_includedir}/httpd \
-  --libexecdir=%{_libdir}/httpd/modules \
-  --datadir=%{contentdir} \
+    --prefix=%{_sysconfdir}/httpd \
+    --exec-prefix=%{_prefix} \
+    --bindir=%{_bindir} \
+    --sbindir=%{_sbindir} \
+    --mandir=%{_mandir} \
+    --libdir=%{_libdir} \
+    --sysconfdir=%{_sysconfdir}/httpd/conf \
+    --includedir=%{_includedir}/httpd \
+    --libexecdir=%{_libdir}/httpd/modules \
+    --datadir=%{contentdir} \
         --enable-layout=Fedora \
         --with-installbuilddir=%{_libdir}/httpd/build \
         --enable-mpms-shared=all \
         --with-apr=%{_prefix} --with-apr-util=%{_prefix} \
-  --enable-suexec --with-suexec \
+    --enable-suexec --with-suexec \
         --enable-suexec-capabilities \
-  --with-suexec-caller=%{suexec_caller} \
-  --with-suexec-docroot=%{docroot} \
-  --without-suexec-logfile \
+    --with-suexec-caller=%{suexec_caller} \
+    --with-suexec-docroot=%{docroot} \
+    --without-suexec-logfile \
         --with-suexec-syslog \
-  --with-suexec-bin=%{_sbindir}/suexec \
-  --with-suexec-uidmin=1000 --with-suexec-gidmin=1000 \
+    --with-suexec-bin=%{_sbindir}/suexec \
+    --with-suexec-uidmin=1000 --with-suexec-gidmin=1000 \
         --with-brotli \
         --enable-pie \
         --with-pcre \
         --enable-mods-shared=all \
-  --enable-ssl --with-ssl --disable-distcache \
-  --enable-proxy --enable-proxy-fdpass \
+    --enable-ssl --with-ssl --disable-distcache \
+    --enable-proxy --enable-proxy-fdpass \
         --enable-cache \
         --enable-disk-cache \
         --enable-ldap --enable-authnz-ldap \
@@ -379,13 +383,13 @@ make DESTDIR=$RPM_BUILD_ROOT install
 mkdir -p $RPM_BUILD_ROOT%{_unitdir}
 for s in httpd.service htcacheclean.service httpd.socket \
          httpd@.service httpd-init.service; do
-  install -p -m 644 $RPM_SOURCE_DIR/${s} \
-                    $RPM_BUILD_ROOT%{_unitdir}/${s}
+    install -p -m 644 $RPM_SOURCE_DIR/${s} \
+    $RPM_BUILD_ROOT%{_unitdir}/${s}
 done
 
 # install conf file/directory
 mkdir $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d \
-      $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d
+    $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d
 install -m 644 $RPM_SOURCE_DIR/README.confd \
     $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/README
 install -m 644 $RPM_SOURCE_DIR/README.confmod \
@@ -394,14 +398,14 @@ for f in 00-base.conf 00-mpm.conf 00-lua.conf 01-cgi.conf 00-dav.conf \
          00-proxy.conf 00-ssl.conf 01-ldap.conf 00-proxyhtml.conf \
          01-ldap.conf 00-systemd.conf 01-session.conf 00-optional.conf \
          01-md.conf; do
-  install -m 644 -p $RPM_SOURCE_DIR/$f \
+    install -m 644 -p $RPM_SOURCE_DIR/$f \
         $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/$f
 done
 
 sed -i '/^#LoadModule mpm_%{mpm}_module /s/^#//' \
-     $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/00-mpm.conf
+    $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/00-mpm.conf
 touch -r $RPM_SOURCE_DIR/00-mpm.conf \
-     $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/00-mpm.conf
+    $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/00-mpm.conf
 
 # install systemd override drop directory
 # Web application packages can drop snippets into this location if
@@ -410,16 +414,16 @@ mkdir $RPM_BUILD_ROOT%{_unitdir}/httpd.service.d
 mkdir $RPM_BUILD_ROOT%{_unitdir}/httpd.socket.d
 
 install -m 644 -p $RPM_SOURCE_DIR/10-listen443.conf \
-      $RPM_BUILD_ROOT%{_unitdir}/httpd.socket.d/10-listen443.conf
+    $RPM_BUILD_ROOT%{_unitdir}/httpd.socket.d/10-listen443.conf
 
 for f in welcome.conf ssl.conf manual.conf userdir.conf; do
-  install -m 644 -p $RPM_SOURCE_DIR/$f \
+    install -m 644 -p $RPM_SOURCE_DIR/$f \
         $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/$f
 done
 
 # Split-out extra config shipped as default in conf.d:
 for f in autoindex; do
-  install -m 644 docs/conf/extra/httpd-${f}.conf \
+    install -m 644 docs/conf/extra/httpd-${f}.conf \
         $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/${f}.conf
 done
 
@@ -428,16 +432,16 @@ rm -v docs/conf/extra/httpd-{ssl,userdir}.conf
 
 rm $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf/*.conf
 install -m 644 -p $RPM_SOURCE_DIR/httpd.conf \
-   $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf/httpd.conf
+    $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf/httpd.conf
 
 mkdir $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
 install -m 644 -p $RPM_SOURCE_DIR/htcacheclean.sysconf \
-   $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/htcacheclean
+    $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/htcacheclean
 
 # tmpfiles.d configuration
 mkdir -p $RPM_BUILD_ROOT%{_prefix}/lib/tmpfiles.d
 install -m 644 -p $RPM_SOURCE_DIR/httpd.tmpfiles \
-   $RPM_BUILD_ROOT%{_prefix}/lib/tmpfiles.d/httpd.conf
+    $RPM_BUILD_ROOT%{_prefix}/lib/tmpfiles.d/httpd.conf
 
 # Other directories
 mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/lib/dav \
@@ -471,12 +475,17 @@ cat > $RPM_BUILD_ROOT%{_rpmconfigdir}/macros.d/macros.httpd <<EOF
 EOF
 
 # Handle contentdir
-mkdir $RPM_BUILD_ROOT%{contentdir}/noindex
+mkdir $RPM_BUILD_ROOT%{contentdir}/noindex \
+    $RPM_BUILD_ROOT%{contentdir}/server-status
 install -m 644 -p $RPM_SOURCE_DIR/index.html \
-        $RPM_BUILD_ROOT%{contentdir}/noindex/index.html
-# index.theme.css
+    $RPM_BUILD_ROOT%{contentdir}/noindex/index.html
+install -m 644 -p docs/server-status/* \
+    $RPM_BUILD_ROOT%{contentdir}/server-status
+
+# METASTORE - [ index.theme.css
 install -m 644 -p $RPM_SOURCE_DIR/index.theme.css \
-        $RPM_BUILD_ROOT%{contentdir}/noindex/index.theme.css
+    $RPM_BUILD_ROOT%{contentdir}/noindex/index.theme.css
+# ] - METASTORE
 
 rm -rf %{contentdir}/htdocs
 
@@ -488,10 +497,10 @@ find $RPM_BUILD_ROOT%{contentdir}/manual \( \
 # Strip the manual down just to English and replace the typemaps with flat files:
 set +x
 for f in `find $RPM_BUILD_ROOT%{contentdir}/manual -name \*.html -type f`; do
-   if test -f ${f}.en; then
-      cp ${f}.en ${f}
-      rm ${f}.*
-   fi
+    if test -f ${f}.en; then
+        cp ${f}.en ${f}
+        rm ${f}.*
+    fi
 done
 set -x
 
@@ -501,7 +510,7 @@ rm -v $RPM_BUILD_ROOT%{docroot}/html/*.html \
 
 # Symlink for the powered-by-$DISTRO image:
 ln -s ../../pixmaps/poweredby.png \
-        $RPM_BUILD_ROOT%{contentdir}/icons/poweredby.png
+    $RPM_BUILD_ROOT%{contentdir}/icons/poweredby.png
 
 # symlinks for /etc/httpd
 ln -s ../..%{_localstatedir}/log/httpd $RPM_BUILD_ROOT/etc/httpd/logs
@@ -512,28 +521,28 @@ ln -s ../..%{_libdir}/httpd/modules $RPM_BUILD_ROOT/etc/httpd/modules
 # install http-ssl-pass-dialog
 mkdir -p $RPM_BUILD_ROOT%{_libexecdir}
 install -m 755 $RPM_SOURCE_DIR/httpd-ssl-pass-dialog \
-  $RPM_BUILD_ROOT%{_libexecdir}/httpd-ssl-pass-dialog
+    $RPM_BUILD_ROOT%{_libexecdir}/httpd-ssl-pass-dialog
 
 # install http-ssl-gencerts
 install -m 755 $RPM_SOURCE_DIR/httpd-ssl-gencerts \
-  $RPM_BUILD_ROOT%{_libexecdir}/httpd-ssl-gencerts
+    $RPM_BUILD_ROOT%{_libexecdir}/httpd-ssl-gencerts
 
 # Install action scripts
 mkdir -p $RPM_BUILD_ROOT%{_libexecdir}/initscripts/legacy-actions/httpd
 for f in graceful configtest; do
     install -p -m 755 $RPM_SOURCE_DIR/action-${f}.sh \
-            $RPM_BUILD_ROOT%{_libexecdir}/initscripts/legacy-actions/httpd/${f}
+        $RPM_BUILD_ROOT%{_libexecdir}/initscripts/legacy-actions/httpd/${f}
 done
 
 # Install logrotate config
 mkdir -p $RPM_BUILD_ROOT/etc/logrotate.d
 install -m 644 -p $RPM_SOURCE_DIR/httpd.logrotate \
-  $RPM_BUILD_ROOT/etc/logrotate.d/httpd
+    $RPM_BUILD_ROOT/etc/logrotate.d/httpd
 
 # Install systemd service man pages
 install -m 644 -p httpd.service.8 httpd-init.service.8 httpd.socket.8 \
-        httpd@.service.8 \
-        $RPM_BUILD_ROOT%{_mandir}/man8
+                  httpd@.service.8 \
+    $RPM_BUILD_ROOT%{_mandir}/man8
 
 # fix man page paths
 sed -e "s|/usr/local/apache2/conf/httpd.conf|/etc/httpd/conf/httpd.conf|" \
@@ -543,7 +552,7 @@ sed -e "s|/usr/local/apache2/conf/httpd.conf|/etc/httpd/conf/httpd.conf|" \
     -e "s|/usr/local/apache2/logs/access_log|/var/log/httpd/access_log|" \
     -e "s|/usr/local/apache2/logs/httpd.pid|/run/httpd/httpd.pid|" \
     -e "s|/usr/local/apache2|/etc/httpd|" < docs/man/httpd.8 \
-  > $RPM_BUILD_ROOT%{_mandir}/man8/httpd.8
+    > $RPM_BUILD_ROOT%{_mandir}/man8/httpd.8
 
 # Make ap_config_layout.h libdir-agnostic
 sed -i '/.*DEFAULT_..._LIBEXECDIR/d;/DEFAULT_..._INSTALLBUILDDIR/d' \
@@ -555,23 +564,23 @@ sed -i '/instdso/s,top_srcdir,top_builddir,' \
 
 # Remove unpackaged files
 rm -vf \
-      $RPM_BUILD_ROOT%{_libdir}/*.exp \
-      $RPM_BUILD_ROOT/etc/httpd/conf/mime.types \
-      $RPM_BUILD_ROOT%{_libdir}/httpd/modules/*.exp \
-      $RPM_BUILD_ROOT%{_libdir}/httpd/build/config.nice \
-      $RPM_BUILD_ROOT%{_bindir}/{ap?-config,dbmmanage} \
-      $RPM_BUILD_ROOT%{_sbindir}/{checkgid,envvars*} \
-      $RPM_BUILD_ROOT%{contentdir}/htdocs/* \
-      $RPM_BUILD_ROOT%{_mandir}/man1/dbmmanage.* \
-      $RPM_BUILD_ROOT%{contentdir}/cgi-bin/*
+    $RPM_BUILD_ROOT%{_libdir}/*.exp \
+    $RPM_BUILD_ROOT/etc/httpd/conf/mime.types \
+    $RPM_BUILD_ROOT%{_libdir}/httpd/modules/*.exp \
+    $RPM_BUILD_ROOT%{_libdir}/httpd/build/config.nice \
+    $RPM_BUILD_ROOT%{_bindir}/{ap?-config,dbmmanage} \
+    $RPM_BUILD_ROOT%{_sbindir}/{checkgid,envvars*} \
+    $RPM_BUILD_ROOT%{contentdir}/htdocs/* \
+    $RPM_BUILD_ROOT%{_mandir}/man1/dbmmanage.* \
+    $RPM_BUILD_ROOT%{contentdir}/cgi-bin/*
 
 rm -rf $RPM_BUILD_ROOT/etc/httpd/conf/{original,extra}
 
 %pre filesystem
 getent group apache >/dev/null || groupadd -g 48 -r apache
 getent passwd apache >/dev/null || \
-  useradd -r -u 48 -g apache -s /sbin/nologin \
-    -d %{contentdir} -c "Apache" apache
+    useradd -r -u 48 -g apache -s /sbin/nologin \
+        -d %{contentdir} -c "Apache" apache
 exit 0
 
 %post
@@ -596,42 +605,41 @@ exit 0
 
 %posttrans
 test -f /etc/sysconfig/httpd-disable-posttrans || \
-  /bin/systemctl try-restart httpd.service htcacheclean.service >/dev/null 2>&1 || :
+  /bin/systemctl try-restart --no-block httpd.service htcacheclean.service >/dev/null 2>&1 || :
 
 %check
 # Check the built modules are all PIC
 if readelf -d $RPM_BUILD_ROOT%{_libdir}/httpd/modules/*.so | grep TEXTREL; then
-   : modules contain non-relocatable code
-   exit 1
+    : modules contain non-relocatable code
+    exit 1
 fi
 set +x
 rv=0
 # Ensure every mod_* that's built is loaded.
 for f in $RPM_BUILD_ROOT%{_libdir}/httpd/modules/*.so; do
-  m=${f##*/}
-  if ! grep -q $m $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/*.conf; then
-    echo ERROR: Module $m not configured.  Disable it, or load it.
-    rv=1
-  fi
+    m=${f##*/}
+    if ! grep -q $m $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/*.conf; then
+        echo ERROR: Module $m not configured.  Disable it, or load it.
+        rv=1
+    fi
 done
 # Ensure every loaded mod_* is actually built
 mods=`grep -h ^LoadModule $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.modules.d/*.conf | sed 's,.*modules/,,'`
 for m in $mods; do
-  f=$RPM_BUILD_ROOT%{_libdir}/httpd/modules/${m}
-  if ! test -x $f; then
-    echo ERROR: Module $m is configured but not built.
-    rv=1
-  fi
+    f=$RPM_BUILD_ROOT%{_libdir}/httpd/modules/${m}
+    if ! test -x $f; then
+        echo ERROR: Module $m is configured but not built.
+        rv=1
+    fi
 done
 set -x
 exit $rv
 
 %files
-%defattr(-,root,root)
 
 %doc ABOUT_APACHE README CHANGES LICENSE VERSIONING NOTICE
 %doc docs/conf/extra/*.conf
-%doc instance.conf
+%doc instance.conf server-status.conf
 
 %{_sysconfdir}/httpd/modules
 %{_sysconfdir}/httpd/logs
@@ -674,7 +682,7 @@ exit $rv
 %{_libdir}/httpd/modules/mod*.so
 %exclude %{_libdir}/httpd/modules/mod_auth_form.so
 %exclude %{_libdir}/httpd/modules/mod_ssl.so
-# %exclude %{_libdir}/httpd/modules/mod_md.so
+%exclude %{_libdir}/httpd/modules/mod_md.so
 %exclude %{_libdir}/httpd/modules/mod_*ldap.so
 %exclude %{_libdir}/httpd/modules/mod_proxy_html.so
 %exclude %{_libdir}/httpd/modules/mod_xml2enc.so
@@ -683,13 +691,17 @@ exit $rv
 %dir %{contentdir}/error
 %dir %{contentdir}/error/include
 %dir %{contentdir}/noindex
+%dir %{contentdir}/server-status
 %{contentdir}/icons/*
 %{contentdir}/error/README
 %{contentdir}/error/*.var
 %{contentdir}/error/include/*.html
 %{contentdir}/noindex/index.html
-# index.theme.css
+%{contentdir}/server-status/*
+
+# METASTORE - [ index.theme.css
 %{contentdir}/noindex/index.theme.css
+# ] - METASTORE
 
 %attr(0710,root,apache) %dir /run/httpd
 %attr(0700,apache,apache) %dir /run/httpd/htcacheclean
@@ -720,7 +732,6 @@ exit $rv
 %attr(755,root,root) %dir %{_unitdir}/httpd.socket.d
 
 %files tools
-%defattr(-,root,root)
 %{_bindir}/*
 %{_mandir}/man1/*
 %doc LICENSE NOTICE
@@ -728,12 +739,10 @@ exit $rv
 %exclude %{_mandir}/man1/apxs.1*
 
 %files manual
-%defattr(-,root,root)
 %{contentdir}/manual
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/manual.conf
 
 %files -n mod_ssl
-%defattr(-,root,root)
 %{_libdir}/httpd/modules/mod_ssl.so
 %config(noreplace) %{_sysconfdir}/httpd/conf.modules.d/00-ssl.conf
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/ssl.conf
@@ -745,29 +754,24 @@ exit $rv
 %{_mandir}/man8/httpd-init.*
 
 %files -n mod_proxy_html
-%defattr(-,root,root)
 %{_libdir}/httpd/modules/mod_proxy_html.so
 %{_libdir}/httpd/modules/mod_xml2enc.so
 %config(noreplace) %{_sysconfdir}/httpd/conf.modules.d/00-proxyhtml.conf
 
 %files -n mod_ldap
-%defattr(-,root,root)
 %{_libdir}/httpd/modules/mod_*ldap.so
 %config(noreplace) %{_sysconfdir}/httpd/conf.modules.d/01-ldap.conf
 
 %files -n mod_session
-%defattr(-,root,root)
 %{_libdir}/httpd/modules/mod_session*.so
 %{_libdir}/httpd/modules/mod_auth_form.so
 %config(noreplace) %{_sysconfdir}/httpd/conf.modules.d/01-session.conf
 
-# %files -n mod_md
-# %defattr(-,root,root)
-# %{_libdir}/httpd/modules/mod_md.so
-# %config(noreplace) %{_sysconfdir}/httpd/conf.modules.d/01-md.conf
+%files -n mod_md
+%{_libdir}/httpd/modules/mod_md.so
+%config(noreplace) %{_sysconfdir}/httpd/conf.modules.d/01-md.conf
 
 %files devel
-%defattr(-,root,root)
 %{_includedir}/httpd
 %{_bindir}/apxs
 %{_mandir}/man1/apxs.1*
@@ -777,11 +781,73 @@ exit $rv
 %{_rpmconfigdir}/macros.d/macros.httpd
 
 %changelog
-* Tue Jul 34 2018 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.34-1
-- Update to upstream release 2.4.34
+* Tue Jul 24 2018 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.34-4
+- Build from EL7.
+
+* Fri Jul 20 2018 Joe Orton <jorton@redhat.com> - 2.4.34-3
+- mod_ssl: fix OCSP regression (upstream r1555631)
+
+* Wed Jul 18 2018 Joe Orton <jorton@redhat.com> - 2.4.34-2
+- update Obsoletes for mod_proxy_uswgi (#1599113)
+
+* Wed Jul 18 2018 Joe Orton <jorton@redhat.com> - 2.4.34-1
+- update to 2.4.34 (#1601160)
+
+* Mon Jul 16 2018 Joe Orton <jorton@redhat.com> - 2.4.33-10
+- don't block on service try-restart in posttrans scriptlet
+- add Lua-based /server-status example page to docs
+- obsoletes: and provides: for mod_proxy_uswgi (#1599113)
+
+* Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 2.4.33-9
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
+
+* Fri Jul  6 2018 Joe Orton <jorton@redhat.com> - 2.4.33-8
+- add per-request memory leak fix (upstream r1833014)
+
+* Fri Jul  6 2018 Joe Orton <jorton@redhat.com> - 2.4.33-7
+- mod_ssl: add PKCS#11 cert/key support (Anderson Sasaki)
+
+* Tue Jun 12 2018 Joe Orton <jorton@redhat.com> - 2.4.33-6
+- mod_systemd: show bound ports in status and log to journal
+  at startup.
 
 * Sun May 20 2018 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.33-1
 - Update to upstream release 2.4.33
+
+* Thu Apr 19 2018 Joe Orton <jorton@redhat.com> - 2.4.33-5
+- add httpd@.service; update httpd.service(8) and add new stub
+
+* Mon Apr 16 2018 Joe Orton <jorton@redhat.com> - 2.4.33-4
+- mod_md: change hard-coded default MdStoreDir to state/md (#1563846)
+
+* Thu Apr 12 2018 Joe Orton <jorton@redhat.com> - 2.4.33-3
+- mod_ssl: drop implicit 'SSLEngine on' for vhost w/o certs (#1564537)
+
+* Fri Mar 30 2018 Adam Williamson <awilliam@redhat.com> - 2.4.33-2
+- Exclude mod_md config file from main package (#1562413)
+
+* Wed Mar 28 2018 Joe Orton <jorton@redhat.com> - 2.4.33-1
+- rebase to 2.4.33 (#1560174)
+- add mod_md subpackage; load mod_proxy_uwsgi by default
+
+* Mon Mar 05 2018 Jitka Plesnikova <jplesnik@redhat.com> - 2.4.29-8
+- Rebuilt with brotli 1.0.3
+
+* Mon Feb 26 2018 Joe Orton <jorton@redhat.com> - 2.4.29-7
+- simplify liblua detection in configure
+
+* Wed Feb 07 2018 Fedora Release Engineering <releng@fedoraproject.org> - 2.4.29-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
+
+* Sat Jan 27 2018 Joe Orton <jorton@redhat.com> - 2.4.29-5
+- link mod_lua against -lcrypt (#1538992)
+
+* Fri Jan 26 2018 Paul Howarth <paul@city-fan.org> - 2.4.29-4
+- Rebuild with updated flags to work around compiler issues on i686
+  (#1538648, #1538693)
+
+* Sat Jan 20 2018 Björn Esser <besser82@fedoraproject.org> - 2.4.29-3
+- Rebuilt for switch to libxcrypt
 
 * Fri Dec 22 2017 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.29-6
 - Update welcome.conf
