@@ -12,7 +12,7 @@
 
 Name:               httpd
 Version:            2.4.34
-Release:            4%{?dist}
+Release:            5%{?dist}
 Summary:            Apache HTTP Server
 Group:              System Environment/Daemons
 License:            ASL 2.0
@@ -94,7 +94,7 @@ BuildRequires:      gcc, autoconf, pkgconfig, findutils, xmlto
 BuildRequires:      perl-interpreter, perl-generators, systemd-devel
 BuildRequires:      zlib-devel, libselinux-devel, lua-devel, brotli-devel
 BuildRequires:      apr-devel >= 1.5.0, apr-util-devel >= 1.5.0, pcre-devel >= 5.0
-Requires:           /etc/mime.types, system-logos-httpd
+Requires:           /etc/mime.types, system-logos
 Requires:           httpd-tools = %{version}-%{release}
 Requires:           httpd-filesystem = %{version}-%{release}
 Requires:           mod_http2
@@ -781,6 +781,9 @@ exit $rv
 %{_rpmconfigdir}/macros.d/macros.httpd
 
 %changelog
+* Fri Jul 27 2018 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.34-5
+- Fix requires (system-logos-httpd to system-logos).
+
 * Tue Jul 24 2018 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.34-4
 - Build from EL7.
 
