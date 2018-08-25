@@ -10,105 +10,105 @@
 %global mpm prefork
 %endif
 
-Name:               httpd
-Version:            2.4.34
-Release:            5%{?dist}
-Summary:            Apache HTTP Server
-Group:              System Environment/Daemons
-License:            ASL 2.0
-URL:                https://httpd.apache.org/
+Name:                   httpd
+Version:                2.4.34
+Release:                5%{?dist}
+Summary:                Apache HTTP Server
+Group:                  System Environment/Daemons
+License:                ASL 2.0
+URL:                    https://httpd.apache.org/
 
-Source0:            https://www.apache.org/dist/httpd/httpd-%{version}.tar.bz2
-Source1:            index.html
-Source2:            httpd.logrotate
-Source3:            instance.conf
-Source4:            httpd-ssl-pass-dialog
-Source5:            httpd.tmpfiles
-Source6:            httpd.service
-Source7:            action-graceful.sh
-Source8:            action-configtest.sh
-Source9:            server-status.conf
-Source10:           httpd.conf
-Source11:           00-base.conf
-Source12:           00-mpm.conf
-Source13:           00-lua.conf
-Source14:           01-cgi.conf
-Source15:           00-dav.conf
-Source16:           00-proxy.conf
-Source17:           00-ssl.conf
-Source18:           01-ldap.conf
-Source19:           00-proxyhtml.conf
-Source20:           userdir.conf
-Source21:           ssl.conf
-Source22:           welcome.conf
-Source23:           manual.conf
-Source24:           00-systemd.conf
-Source25:           01-session.conf
-Source26:           10-listen443.conf
-Source27:           httpd.socket
-Source28:           00-optional.conf
-Source29:           01-md.conf
+Source0:                https://www.apache.org/dist/httpd/httpd-%{version}.tar.bz2
+Source1:                index.html
+Source2:                httpd.logrotate
+Source3:                instance.conf
+Source4:                httpd-ssl-pass-dialog
+Source5:                httpd.tmpfiles
+Source6:                httpd.service
+Source7:                action-graceful.sh
+Source8:                action-configtest.sh
+Source9:                server-status.conf
+Source10:               httpd.conf
+Source11:               00-base.conf
+Source12:               00-mpm.conf
+Source13:               00-lua.conf
+Source14:               01-cgi.conf
+Source15:               00-dav.conf
+Source16:               00-proxy.conf
+Source17:               00-ssl.conf
+Source18:               01-ldap.conf
+Source19:               00-proxyhtml.conf
+Source20:               userdir.conf
+Source21:               ssl.conf
+Source22:               welcome.conf
+Source23:               manual.conf
+Source24:               00-systemd.conf
+Source25:               01-session.conf
+Source26:               10-listen443.conf
+Source27:               httpd.socket
+Source28:               00-optional.conf
+Source29:               01-md.conf
 # Documentation
-Source30:           README.confd
-Source31:           README.confmod
-Source32:           httpd.service.xml
-Source40:           htcacheclean.service
-Source41:           htcacheclean.sysconf
-Source42:           httpd-init.service
-Source43:           httpd-ssl-gencerts
-Source44:           httpd@.service
+Source30:               README.confd
+Source31:               README.confmod
+Source32:               httpd.service.xml
+Source40:               htcacheclean.service
+Source41:               htcacheclean.sysconf
+Source42:               httpd-init.service
+Source43:               httpd-ssl-gencerts
+Source44:               httpd@.service
 # Signature
-Source900:          https://www.apache.org/dist/httpd/httpd-%{version}.tar.bz2.asc
+Source900:              https://www.apache.org/dist/httpd/httpd-%{version}.tar.bz2.asc
 # Theme: index.theme.css
-Source910:          index.theme.css
+Source910:              index.theme.css
 
 # build/scripts patches
-Patch1:             httpd-2.4.1-apctl.patch
-Patch2:             httpd-2.4.9-apxs.patch
-Patch3:             httpd-2.4.1-deplibs.patch
-Patch6:             httpd-2.4.3-apctl-systemd.patch
+Patch1:                 httpd-2.4.1-apctl.patch
+Patch2:                 httpd-2.4.9-apxs.patch
+Patch3:                 httpd-2.4.1-deplibs.patch
+Patch6:                 httpd-2.4.3-apctl-systemd.patch
 # Needed for socket activation and mod_systemd patch
-Patch19:            httpd-2.4.25-detect-systemd.patch
+Patch19:                httpd-2.4.25-detect-systemd.patch
 # Features/functional changes
-Patch21:            httpd-2.4.33-mddefault.patch
-Patch23:            httpd-2.4.33-export.patch
-Patch24:            httpd-2.4.1-corelimit.patch
-Patch25:            httpd-2.4.25-selinux.patch
-Patch26:            httpd-2.4.4-r1337344+.patch
-Patch27:            httpd-2.4.2-icons.patch
-Patch29:            httpd-2.4.33-systemd.patch
-Patch30:            httpd-2.4.4-cachehardmax.patch
-Patch31:            httpd-2.4.33-sslmultiproxy.patch
-Patch34:            httpd-2.4.17-socket-activation.patch
-Patch35:            httpd-2.4.33-sslciphdefault.patch
-Patch36:            httpd-2.4.33-r1830819+.patch
+Patch21:                httpd-2.4.33-mddefault.patch
+Patch23:                httpd-2.4.33-export.patch
+Patch24:                httpd-2.4.1-corelimit.patch
+Patch25:                httpd-2.4.25-selinux.patch
+Patch26:                httpd-2.4.4-r1337344+.patch
+Patch27:                httpd-2.4.2-icons.patch
+Patch29:                httpd-2.4.33-systemd.patch
+Patch30:                httpd-2.4.4-cachehardmax.patch
+Patch31:                httpd-2.4.33-sslmultiproxy.patch
+Patch34:                httpd-2.4.17-socket-activation.patch
+Patch35:                httpd-2.4.33-sslciphdefault.patch
+Patch36:                httpd-2.4.33-r1830819+.patch
 
 # Bug fixes
 # https://bugzilla.redhat.com/show_bug.cgi?id=1397243
-Patch58:            httpd-2.4.34-r1738878.patch
-Patch59:            httpd-2.4.34-r1555631.patch
+Patch58:                httpd-2.4.34-r1738878.patch
+Patch59:                httpd-2.4.34-r1555631.patch
 
 # Security fixes
 
-BuildRequires:      gcc, autoconf, pkgconfig, findutils, xmlto
-BuildRequires:      perl-interpreter, perl-generators, systemd-devel
-BuildRequires:      zlib-devel, libselinux-devel, lua-devel, brotli-devel
-BuildRequires:      apr-devel >= 1.5.0, apr-util-devel >= 1.5.0, pcre-devel >= 5.0
-Requires:           /etc/mime.types, system-logos
-Requires:           httpd-tools = %{version}-%{release}
-Requires:           httpd-filesystem = %{version}-%{release}
-Requires:           mod_http2
-Requires(pre):      httpd-filesystem
-Requires(preun):    systemd-units
-Requires(postun):   systemd-units
-Requires(post):     systemd-units
-Obsoletes:          httpd-suexec
-Provides:           webserver
-Provides:           mod_dav = %{version}-%{release}, httpd-suexec = %{version}-%{release}
-Provides:           httpd-mmn = %{mmn}, httpd-mmn = %{mmnisa}
-Conflicts:          apr < 1.5.0-1
-Provides:           mod_proxy_uwsgi = %{version}-%{release}
-Obsoletes:          mod_proxy_uwsgi < 2.0.17.1-2
+BuildRequires:          gcc, autoconf, pkgconfig, findutils, xmlto
+BuildRequires:          perl-interpreter, perl-generators, systemd-devel
+BuildRequires:          zlib-devel, libselinux-devel, lua-devel, brotli-devel
+BuildRequires:          apr-devel >= 1.5.0, apr-util-devel >= 1.5.0, pcre-devel >= 5.0
+Requires:               /etc/mime.types, system-logos
+Requires:               httpd-tools = %{version}-%{release}
+Requires:               httpd-filesystem = %{version}-%{release}
+Requires:               mod_http2
+Requires(pre):          httpd-filesystem
+Requires(preun):        systemd-units
+Requires(postun):       systemd-units
+Requires(post):         systemd-units
+Obsoletes:              httpd-suexec
+Provides:               webserver
+Provides:               mod_dav = %{version}-%{release}, httpd-suexec = %{version}-%{release}
+Provides:               httpd-mmn = %{mmn}, httpd-mmn = %{mmnisa}
+Conflicts:              apr < 1.5.0-1
+Provides:               mod_proxy_uwsgi = %{version}-%{release}
+Obsoletes:              mod_proxy_uwsgi < 2.0.17.1-2
 
 %description
 The Apache HTTP Server is a powerful, efficient, and extensible
@@ -119,10 +119,10 @@ web server.
 # -------------------------------------------------------------------------------------------------------------------- #
 
 %package devel
-Summary:            Development interfaces for the Apache HTTP Server
-Group:              Development/Libraries
-Requires:           apr-devel, apr-util-devel, pkgconfig
-Requires:           httpd = %{version}-%{release}
+Summary:                Development interfaces for the Apache HTTP Server
+Group:                  Development/Libraries
+Requires:               apr-devel, apr-util-devel, pkgconfig
+Requires:               httpd = %{version}-%{release}
 
 %description devel
 The httpd-devel package contains the APXS binary and other files
@@ -138,10 +138,10 @@ to install this package.
 # -------------------------------------------------------------------------------------------------------------------- #
 
 %package manual
-Summary:            Documentation for the Apache HTTP Server
-Group:              Documentation
-Requires:           httpd = %{version}-%{release}
-BuildArch:          noarch
+Summary:                Documentation for the Apache HTTP Server
+Group:                  Documentation
+Requires:               httpd = %{version}-%{release}
+BuildArch:              noarch
 
 %description manual
 The httpd-manual package contains the complete manual and
@@ -153,10 +153,10 @@ also be found at https://httpd.apache.org/docs/2.4/.
 # -------------------------------------------------------------------------------------------------------------------- #
 
 %package filesystem
-Summary:            The basic directory layout for the Apache HTTP Server
-Group:              System Environment/Daemons
-BuildArch:          noarch
-Requires(pre):      /usr/sbin/useradd
+Summary:                The basic directory layout for the Apache HTTP Server
+Group:                  System Environment/Daemons
+BuildArch:              noarch
+Requires(pre):          /usr/sbin/useradd
 
 %description filesystem
 The httpd-filesystem package contains the basic directory layout
@@ -168,8 +168,8 @@ for the directories.
 # -------------------------------------------------------------------------------------------------------------------- #
 
 %package tools
-Summary:            Tools for use with the Apache HTTP Server
-Group:              System Environment/Daemons
+Summary:                Tools for use with the Apache HTTP Server
+Group:                  System Environment/Daemons
 
 %description tools
 The httpd-tools package contains tools which can be used with
@@ -180,15 +180,15 @@ the Apache HTTP Server.
 # -------------------------------------------------------------------------------------------------------------------- #
 
 %package -n mod_ssl
-Summary:            SSL/TLS module for the Apache HTTP Server
-Group:              System Environment/Daemons
-Epoch:              1
-BuildRequires:      openssl-devel
-Requires(pre):      httpd-filesystem
-Requires:           httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
-Requires:           sscg >= 2.2.0
+Summary:                SSL/TLS module for the Apache HTTP Server
+Group:                  System Environment/Daemons
+Epoch:                  1
+BuildRequires:          openssl-devel
+Requires(pre):          httpd-filesystem
+Requires:               httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
+Requires:               sscg >= 2.2.0
 # Require an OpenSSL which supports PROFILE=SYSTEM
-Conflicts:          openssl-libs < 1:1.0.1h-4
+Conflicts:              openssl-libs < 1:1.0.1h-4
 
 %description -n mod_ssl
 The mod_ssl module provides strong cryptography for the Apache Web
@@ -200,10 +200,10 @@ Security (TLS) protocols.
 # -------------------------------------------------------------------------------------------------------------------- #
 
 %package -n mod_md
-Summary:            Certificate provisioning using ACME for the Apache HTTP Server
-Group:              System Environment/Daemons
-BuildRequires:      jansson-devel, libcurl-devel
-Requires:           httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
+Summary:                Certificate provisioning using ACME for the Apache HTTP Server
+Group:                  System Environment/Daemons
+BuildRequires:          jansson-devel, libcurl-devel
+Requires:               httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
 
 %description -n mod_md
 This module manages common properties of domains for one or more
@@ -217,12 +217,12 @@ renewal of certificates before they expire.
 # -------------------------------------------------------------------------------------------------------------------- #
 
 %package -n mod_proxy_html
-Summary:            HTML and XML content filters for the Apache HTTP Server
-Group:              System Environment/Daemons
-Requires:           httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
-BuildRequires:      libxml2-devel
-Epoch:              1
-Obsoletes:          mod_proxy_html < 1:2.4.1-2
+Summary:                HTML and XML content filters for the Apache HTTP Server
+Group:                  System Environment/Daemons
+Requires:               httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
+BuildRequires:          libxml2-devel
+Epoch:                  1
+Obsoletes:              mod_proxy_html < 1:2.4.1-2
 
 %description -n mod_proxy_html
 The mod_proxy_html and mod_xml2enc modules provide filters which can
@@ -233,10 +233,10 @@ transform and modify HTML and XML content.
 # -------------------------------------------------------------------------------------------------------------------- #
 
 %package -n mod_ldap
-Summary:            LDAP authentication modules for the Apache HTTP Server
-Group:              System Environment/Daemons
-Requires:           httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
-Requires:           apr-util-ldap
+Summary:                LDAP authentication modules for the Apache HTTP Server
+Group:                  System Environment/Daemons
+Requires:               httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
+Requires:               apr-util-ldap
 
 %description -n mod_ldap
 The mod_ldap and mod_authnz_ldap modules add support for LDAP
@@ -247,9 +247,9 @@ authentication to the Apache HTTP Server.
 # -------------------------------------------------------------------------------------------------------------------- #
 
 %package -n mod_session
-Summary:            Session interface for the Apache HTTP Server
-Group:              System Environment/Daemons
-Requires:           httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
+Summary:                Session interface for the Apache HTTP Server
+Group:                  System Environment/Daemons
+Requires:               httpd = 0:%{version}-%{release}, httpd-mmn = %{mmnisa}
 
 %description -n mod_session
 The mod_session module and associated backends provide an abstract
