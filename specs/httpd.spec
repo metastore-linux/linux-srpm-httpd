@@ -12,7 +12,7 @@
 
 Name:                   httpd
 Version:                2.4.34
-Release:                5%{?dist}
+Release:                6%{?dist}
 Summary:                Apache HTTP Server
 Group:                  System Environment/Daemons
 License:                ASL 2.0
@@ -781,6 +781,9 @@ exit $rv
 %{_rpmconfigdir}/macros.d/macros.httpd
 
 %changelog
+* Fri Sep 14 2018 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.34-6
+- Fix "index.theme.css".
+
 * Fri Jul 27 2018 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.34-5
 - Fix requires (system-logos-httpd to system-logos).
 
