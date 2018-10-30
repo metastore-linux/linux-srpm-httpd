@@ -4,6 +4,11 @@
 %define mmn 20120211
 %define mmnisa %{mmn}%{__isa_name}%{__isa_bits}
 %define vstring %(source /etc/os-release; echo ${REDHAT_SUPPORT_PRODUCT})
+
+# METASTORE - [
+%define openssl_dir openssl-1.1.1
+# ] - METASTORE
+
 %if 0%{?fedora} > 26 || 0%{?rhel} > 7
 %global mpm event
 %else
@@ -11,8 +16,8 @@
 %endif
 
 Name:                   httpd
-Version:                2.4.34
-Release:                6%{?dist}
+Version:                2.4.37
+Release:                1%{?dist}
 Summary:                Apache HTTP Server
 Group:                  System Environment/Daemons
 License:                ASL 2.0
@@ -57,16 +62,22 @@ Source41:               htcacheclean.sysconf
 Source42:               httpd-init.service
 Source43:               httpd-ssl-gencerts
 Source44:               httpd@.service
+
+# METASTORE - [
 # Signature
 Source900:              https://www.apache.org/dist/httpd/httpd-%{version}.tar.bz2.asc
 # Theme: index.theme.css
 Source910:              index.theme.css
+# OpenSSL
+Source911:              %{openssl_dir}.tar.gz
+# ] - METASTORE
 
 # build/scripts patches
 Patch1:                 httpd-2.4.1-apctl.patch
 Patch2:                 httpd-2.4.9-apxs.patch
 Patch3:                 httpd-2.4.1-deplibs.patch
-Patch6:                 httpd-2.4.3-apctl-systemd.patch
+#Patch4:                 httpd-2.4.34-layfix.patch
+Patch6:                 httpd-2.4.34-apctlsystemd.patch
 # Needed for socket activation and mod_systemd patch
 Patch19:                httpd-2.4.25-detect-systemd.patch
 # Features/functional changes
@@ -74,19 +85,22 @@ Patch21:                httpd-2.4.33-mddefault.patch
 Patch23:                httpd-2.4.33-export.patch
 Patch24:                httpd-2.4.1-corelimit.patch
 Patch25:                httpd-2.4.25-selinux.patch
-Patch26:                httpd-2.4.4-r1337344+.patch
+#Patch26:                httpd-2.4.4-r1337344+.patch
 Patch27:                httpd-2.4.2-icons.patch
 Patch29:                httpd-2.4.33-systemd.patch
 Patch30:                httpd-2.4.4-cachehardmax.patch
 Patch31:                httpd-2.4.33-sslmultiproxy.patch
 Patch34:                httpd-2.4.17-socket-activation.patch
-Patch35:                httpd-2.4.33-sslciphdefault.patch
-Patch36:                httpd-2.4.33-r1830819+.patch
+#Patch36:                httpd-2.4.33-r1830819+.patch
+#Patch37:                httpd-2.4.34-r1827912+.patch
+#Patch38:                httpd-2.4.34-sslciphdefault.patch
+#Patch39:                httpd-2.4.34-sslprotdefault.patch
 
 # Bug fixes
 # https://bugzilla.redhat.com/show_bug.cgi?id=1397243
-Patch58:                httpd-2.4.34-r1738878.patch
-Patch59:                httpd-2.4.34-r1555631.patch
+#Patch58:                httpd-2.4.34-r1738878.patch
+#Patch59:                httpd-2.4.34-r1555631.patch
+#Patch60:                httpd-2.4.34-enable-sslv3.patch
 
 # Security fixes
 
@@ -264,6 +278,7 @@ interface for storing and accessing per-user session data.
 %patch1 -p1 -b .apctl
 %patch2 -p1 -b .apxs
 %patch3 -p1 -b .deplibs
+#%patch4 -p1 -b .layfix
 %patch6 -p1 -b .apctlsystemd
 
 %patch19 -p1 -b .detectsystemd
@@ -278,11 +293,21 @@ interface for storing and accessing per-user session data.
 %patch30 -p1 -b .cachehardmax
 #patch31 -p1 -b .sslmultiproxy
 %patch34 -p1 -b .socketactivation
-%patch35 -p1 -b .sslciphdefault
-%patch36 -p1 -b .r1830819+
+#%patch36 -p1 -b .r1830819+
+#%patch37 -p1 -b .r1827912+
+#%patch38 -p1 -b .sslciphdefault
+#%patch39 -p1 -b .sslprotdefault
 
-%patch58 -p1 -b .r1738878
-%patch59 -p1 -b .r1555631
+#%patch58 -p1 -b .r1738878
+#%patch59 -p1 -b .r1555631
+#%patch60 -p1 -b .enable-sslv3
+
+# METASTORE - [
+cp %{SOURCE911} %{_tmppath}
+
+# Unpack OpenSSL.
+%{__tar} -xzf %{_tmppath}/%{openssl_dir}.tar.gz -C %{_tmppath}
+# ] - METASTORE
 
 # Patch in the vendor string
 sed -i '/^#define PLATFORM/s/Unix/%{vstring}/' os/unix/os.h
@@ -362,7 +387,7 @@ export LYNX_PATH=/usr/bin/links
         --enable-pie \
         --with-pcre \
         --enable-mods-shared=all \
-    --enable-ssl --with-ssl --disable-distcache \
+    --enable-ssl --with-ssl=%{_tmppath}/%{openssl_dir} --disable-distcache \
     --enable-proxy --enable-proxy-fdpass \
         --enable-cache \
         --enable-disk-cache \
@@ -781,8 +806,47 @@ exit $rv
 %{_rpmconfigdir}/macros.d/macros.httpd
 
 %changelog
+* Wed Oct 31 2018 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.37-1
+- Update to upstream release 2.4.37.
+
+* Wed Oct 31 2018 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.34-14
+- Build with OpenSSL v1.1.1.
+
+* Wed Oct 31 2018 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.34-13
+- Check SSL. v3.
+
+* Sun Oct 28 2018 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.34-12
+- Check SSL. v2.
+
+* Sun Oct 28 2018 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.34-11
+- Check SSL. v1.
+
+* Fri Sep 28 2018 Joe Orton <jorton@redhat.com> - 2.4.34-10
+- apachectl: don't read /etc/sysconfig/httpd
+
+* Tue Sep 25 2018 Joe Orton <jorton@redhat.com> - 2.4.34-9
+- fix build if OpenSSL built w/o SSLv3 support
+
+* Fri Sep 21 2018 Joe Orton <jorton@redhat.com> - 2.4.34-8
+- comment-out SSLProtocol, SSLProxyProtocol from ssl.conf in
+  default configuration; now follow OpenSSL system default (#1468322)
+
+* Fri Sep 21 2018 Joe Orton <jorton@redhat.com> - 2.4.34-7
+- mod_ssl: follow OpenSSL protocol defaults if SSLProtocol
+  is not configured (Rob Crittenden, #1618371)
+
 * Fri Sep 14 2018 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.34-6
 - Fix "index.theme.css".
+
+* Tue Aug 28 2018 Luboš Uhliarik <luhliari@redhat.com> - 2.4.34-6
+- mod_ssl: enable SSLv3 and change behavior of "SSLProtocol All"
+  configuration (#1624777)
+
+* Tue Aug 21 2018 Joe Orton <jorton@redhat.com> - 2.4.34-5
+- mod_ssl: further TLSv1.3 fix (#1619389)
+
+* Mon Aug 13 2018 Joe Orton <jorton@redhat.com> - 2.4.34-4
+- mod_ssl: backport TLSv1.3 support changes from upstream (#1615059)
 
 * Fri Jul 27 2018 Kitsune Solar <kitsune.solar@gmail.com> - 2.4.34-5
 - Fix requires (system-logos-httpd to system-logos).
