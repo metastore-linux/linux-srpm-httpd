@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html dir="ltr" lang="ru">
-<head>
+<head prefix="og: http://ogp.me/ns#">
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta name="keywords" content="" />
 	<meta name="description" content="" />
-	<meta name="copyright" content="METADATA.Foundation" />
+	<meta name="copyright" content="METADATA / FOUNDATION" />
 	<meta name="robots" content="noindex" />
 	<meta name="robots" content="nofollow" />
 	<title>METADATA</title>
@@ -17,7 +17,7 @@
 	<link type="text/css" rel="stylesheet" href="index.theme.css" />
 	<!-- / styles -->
 </head>
-<body>
+<body itemscope itemtype="http://schema.org/WebPage">
 <section id="section-main" class="hero is-fullheight is-dark">
 	<div class="hero-body">
 		<div class="container">
@@ -58,17 +58,33 @@
 		</div>
 	</div>
 	<div class="hero-foot">
-		<nav class="tabs is-boxed is-fullwidth">
+		<nav class="tabs is-boxed is-fullwidth" itemscope itemtype="http://schema.org/SiteNavigationElement">
 			<div class="container">
 				<ul>
 					<li>
-						<a href="https://metadata.foundation/" target="_blank">METADATA Foundation</a>
+						<a href="https://metadata.foundation/" itemprop="url" target="_blank">
+							<span itemprop="name">Фонд METADATA</span>
+						</a>
 					</li>
 					<li>
-						<a href="https://unix.community/" target="_blank">UNIX Community</a>
+						<a href="https://metastore.pro/" itemprop="url" target="_blank">
+							<span itemprop="name">Репозиторий METASTORE</span>
+						</a>
 					</li>
 					<li>
-						<a href="https://webmasters.community/" target="_blank">WEBMASTERS Community</a>
+						<a href="https://unix.community/" itemprop="url" target="_blank">
+							<span itemprop="name">Сообщество UNIX</span>
+						</a>
+					</li>
+					<li>
+						<a href="https://webmasters.community/" itemprop="url" target="_blank">
+							<span itemprop="name">Сообщество веб-мастеров</span>
+						</a>
+					</li>
+					<li>
+						<a href="https://furs.network/" itemprop="url" target="_blank">
+							<span itemprop="name">Сеть FURRY</span>
+						</a>
 					</li>
 				</ul>
 			</div>
